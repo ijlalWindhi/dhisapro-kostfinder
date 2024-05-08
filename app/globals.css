@@ -21,6 +21,8 @@ code {
 
 .home {
   background-image: url("/images/images-hero.png");
+  background-repeat: no-repeat;
+  background-size: cover;
 }
 
 .contact {
