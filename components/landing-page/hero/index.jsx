@@ -1,15 +1,15 @@
 "use client";
 import React, { useRef } from "react";
-import { Text, Icon, Flex, Grid, GridItem } from "@chakra-ui/react";
+import { Text, Flex, Grid } from "@chakra-ui/react";
 import ImageHero from "@/public/images/images-hero.png";
 import { GoLocation } from "react-icons/go";
-import { BiDollar, BiSearch } from "react-icons/bi";
+import { BiDollar } from "react-icons/bi";
 import { MdHomeWork } from "react-icons/md";
 import { motion } from "framer-motion";
 import Navigation from "@/components/landing-page/hero/Navigation";
 import Title from "@/components/landing-page/hero/Title";
 
-export default function Hero() {
+export default function Hero({ jumlahKamar }) {
   const scrollRef = useRef(null);
 
   return (
@@ -52,7 +52,7 @@ export default function Hero() {
           viewport={{ root: scrollRef }}
           transition={{ duration: "5" }}
         >
-          Temukan lebih dari 5+ tipe kamar yang cocok untuk anda
+          Temukan lebih dari {jumlahKamar}+ tipe kamar yang cocok untuk anda
         </Text>
         <Grid
           maxW={{ base: "full", md: "fit-content" }}
@@ -81,8 +81,8 @@ export default function Hero() {
           />
           <Navigation
             icon={MdHomeWork}
-            heading={"Tipe Kamar"}
-            title={"5+ Tipe Kamar"}
+            heading={"Jumlah Kamar"}
+            title={`${jumlahKamar}+ Jumlah Kamar`}
           />
         </Grid>
         <Grid
@@ -91,8 +91,7 @@ export default function Hero() {
             md: "repeat(3, 1fr)",
           }}
         >
-          <Title heading={5} title={"Jenis Kamar Yang Tersedia"} />
-          <Title heading={20} title={"Kamar Yang Tersedia"} />
+          <Title heading={jumlahKamar} title={"Kamar Yang Tersedia"} />
         </Grid>
       </Flex>
     </Flex>

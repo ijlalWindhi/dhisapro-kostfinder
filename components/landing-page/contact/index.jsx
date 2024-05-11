@@ -3,7 +3,7 @@ import React from "react";
 import { Flex, Text, Button, Box } from "@chakra-ui/react";
 import { motion } from "framer-motion";
 
-export default function index() {
+export default function index({ jumlahKamar }) {
   const scrollRef = React.useRef(null);
   return (
     <Flex
@@ -34,7 +34,7 @@ export default function index() {
           maxW={{ md: "50%" }}
           my={5}
         >
-          Temukan lebih dari 20+ kamar di Kost Putra Darma 5
+          Temukan lebih dari {jumlahKamar}+ kamar di Kost Putra Darma 5
         </Text>
       </Box>
     </Flex>

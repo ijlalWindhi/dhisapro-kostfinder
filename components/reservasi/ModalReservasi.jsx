@@ -1,5 +1,5 @@
 "use client";
-import React from "react";
+import React, { useEffect } from "react";
 import {
   Modal,
   ModalOverlay,
@@ -16,73 +16,80 @@ import {
   Select,
 } from "@chakra-ui/react";
 import { useForm } from "react-hook-form";
-import { postReservasi } from "@/api/reservasi";
-import { postPenyewa } from "@/api/penyewa";
+import { postReservasi, updateReservasi } from "@/api/reservasi";
 
-function ModalProperty({ isOpen, onClose, staff, no_kamar }) {
+function ModalReservasi({
+  isOpen,
+  onClose,
+  staff,
+  kamar,
+  type,
+  getData,
+  selectedReservasi,
+}) {
   const {
     register,
     formState: { errors },
+    setValue,
     handleSubmit,
   } = useForm();
 
   const generateRandomId = () => {
     return new Promise((resolve) => {
       setTimeout(() => {
-        const id_reservasi = Math.floor(Math.random() * 100) + 1;
-        resolve(id_reservasi);
+        const id = Math.floor(Math.random() * 100) + 1;
+        resolve(id);
       }, 0);
     });
   };
 
   const onSubmit = async (data) => {
     try {
-      const id_reservasi = await generateRandomId();
-      const dataPenyewa = {
-        nik: parseInt(data.nik),
-        nama: data.nama,
-        alamat: data.alamat,
-        no_telp: data.no_telp,
-      };
+      const id = await generateRandomId();
       const dataReservasi = {
-        id_reservasi: parseInt(id_reservasi),
-        nik: parseInt(data.nik),
-        no_kamar: parseInt(no_kamar),
-        id_staff: parseInt(data.id_staff),
-        tgl_check_in: new Date(data.tgl_check_in),
-        tgl_check_out: new Date(data.tgl_check_out),
+        id_reservasi: parseInt(id),
+        nik: parseInt(data?.nik),
+        no_kamar: parseInt(data?.no_kamar),
+        id_staff: parseInt(data?.id_staff),
+        tgl_check_in: new Date(data?.tgl_check_in),
+        tgl_check_out: new Date(data?.tgl_check_out),
       };
-      await postPenyewa(dataPenyewa);
-      await postReservasi(dataReservasi);
+      if (type == "new") {
+        await postReservasi(dataReservasi);
+      } else {
+        await updateReservasi(selectedReservasi?.id_reservasi, dataReservasi);
+      }
+      await getData();
       onClose();
     } catch (error) {
       console.log(error);
     }
   };
+
+  useEffect(() => {
+    if (type == "new") {
+      setValue("nik", "");
+      setValue("no_kamar", "");
+      setValue("id_staff", "");
+      setValue("tgl_check_in", "");
+      setValue("tgl_check_out", "");
+    } else {
+      setValue("nik", selectedReservasi?.nik);
+      setValue("no_kamar", selectedReservasi?.no_kamar);
+      setValue("id_staff", selectedReservasi?.id_staff);
+      setValue("tgl_check_in", selectedReservasi?.tgl_check_in?.slice(0, 10));
+      setValue("tgl_check_out", selectedReservasi?.tgl_check_out?.slice(0, 10));
+    }
+  }, [isOpen]);
   return (
     <Modal isOpen={isOpen} onClose={onClose}>
       <ModalOverlay />
       <ModalContent>
-        <ModalHeader>Ajukan Sewa</ModalHeader>
+        <ModalHeader>{type == "new" ? "Tambah" : "Edit"} Reservasi</ModalHeader>
         <ModalCloseButton />
         <ModalBody>
           <FormControl>
             <Flex gap={3} mt={3} flexDir={"column"}>
-              <Flex flexDir={"column"}>
-                <Input
-                  placeholder="Masukkan Nama Lengkap"
-                  name="nama"
-                  id="nama"
-                  {...register("nama", {
-                    required: true,
-                  })}
-                />
-                {errors.nama?.type === "required" && (
-                  <FormHelperText textColor="red" mb={4}>
-                    Nama harus diisi
-                  </FormHelperText>
-                )}
-              </Flex>
               <Flex flexDir={"column"}>
                 <Input
                   placeholder="Masukkan NIK"
@@ -101,48 +108,6 @@ function ModalProperty({ isOpen, onClose, staff, no_kamar }) {
                 {errors.nik?.type === "maxLength" && (
                   <FormHelperText textColor="red" mb={4}>
                     NIK harus 6 angka
-                  </FormHelperText>
-                )}
-              </Flex>
-              <Flex flexDir={"column"}>
-                <Input
-                  placeholder="Masukkan No Telephone"
-                  name="no_telp"
-                  id="no_telp"
-                  {...register("no_telp", {
-                    required: true,
-                    minLength: 9,
-                    maxLength: 12,
-                  })}
-                />
-                {errors.no_telp?.type === "required" && (
-                  <FormHelperText textColor="red" mb={4}>
-                    No Telephone harus diisi
-                  </FormHelperText>
-                )}
-                {errors.no_telp?.type === "maxLength" && (
-                  <FormHelperText textColor="red" mb={4}>
-                    No Telephone maksimal 12 angka
-                  </FormHelperText>
-                )}
-                {errors.no_telp?.type === "minLength" && (
-                  <FormHelperText textColor="red" mb={4}>
-                    No Telephone minimal 9 angka
-                  </FormHelperText>
-                )}
-              </Flex>
-              <Flex flexDir={"column"}>
-                <Input
-                  placeholder="Masukkan Alamat"
-                  name="alamat"
-                  id="alamat"
-                  {...register("alamat", {
-                    required: true,
-                  })}
-                />
-                {errors.alamat?.type === "required" && (
-                  <FormHelperText textColor="red" mb={4}>
-                    Alamat harus diisi
                   </FormHelperText>
                 )}
               </Flex>
@@ -184,14 +149,33 @@ function ModalProperty({ isOpen, onClose, staff, no_kamar }) {
                   })}
                 >
                   {staff.map((item) => (
-                    <option value={item.id_staff} key={item.id_staff}>
-                      {item.nama}
+                    <option value={item?.id_staff} key={item?.id_staff}>
+                      {item?.nama}
                     </option>
                   ))}
                 </Select>
                 {errors.id_staff?.type === "required" && (
                   <FormHelperText textColor="red" mb={4}>
                     Staff harus diisi
+                  </FormHelperText>
+                )}
+              </Flex>
+              <Flex flexDir={"column"}>
+                <Select
+                  placeholder="Pilih Kamar"
+                  {...register("no_kamar", {
+                    required: true,
+                  })}
+                >
+                  {kamar.map((item) => (
+                    <option value={item?.no_kamar} key={item?.no_kamar}>
+                      {item?.no_kamar}
+                    </option>
+                  ))}
+                </Select>
+                {errors.id_staff?.type === "required" && (
+                  <FormHelperText textColor="red" mb={4}>
+                    No kamar harus diisi
                   </FormHelperText>
                 )}
               </Flex>
@@ -210,7 +194,7 @@ function ModalProperty({ isOpen, onClose, staff, no_kamar }) {
               handleSubmit((values) => onSubmit(values))();
             }}
           >
-            Ajukan
+            Simpan
           </Button>
         </ModalFooter>
       </ModalContent>
@@ -218,4 +202,4 @@ function ModalProperty({ isOpen, onClose, staff, no_kamar }) {
   );
 }
 
-export default ModalProperty;
+export default ModalReservasi;
